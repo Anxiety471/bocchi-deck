@@ -163,7 +163,15 @@ function getThemeConfig(mode: ThemeMode): BocchiThemeConfig {
  * Card type identifiers for per-card border colors.
  * Only used by retro-rock theme in expanded mode.
  */
-type CardType = "session" | "setlist" | "riff" | "clean-take" | "bad-take" | "off-beat" | "amp" | "start-take";
+type CardType =
+	| "session"
+	| "setlist"
+	| "riff"
+	| "clean-take"
+	| "bad-take"
+	| "off-beat"
+	| "amp"
+	| "start-take";
 
 /**
  * Map a card type to the Pi theme color key for its border accent.
@@ -182,14 +190,22 @@ function getCardAccent(cfg: BocchiThemeConfig, cardType: CardType): string {
 	if (cfg.labels.activeContextTitle.includes("\uD83C\uDFB8")) {
 		// retro-rock: per-card accent mapping
 		switch (cardType) {
-			case "session":    return "accent";
-			case "setlist":    return "accent";
-			case "riff":       return "warning";
-			case "clean-take": return "success";
-			case "bad-take":   return "error";
-			case "off-beat":   return "warning";
-			case "amp":        return "accent";
-			case "start-take": return "warning";
+			case "session":
+				return "accent";
+			case "setlist":
+				return "warning";
+			case "riff":
+				return "warning";
+			case "clean-take":
+				return "success";
+			case "bad-take":
+				return "error";
+			case "off-beat":
+				return "warning";
+			case "amp":
+				return "warning";
+			case "start-take":
+				return "warning";
 		}
 	}
 	if (cfg.labels.activeContextTitle === "SESSION") {
@@ -203,7 +219,11 @@ function getCardAccent(cfg: BocchiThemeConfig, cardType: CardType): string {
 /**
  * Determine if we should render expanded card borders.
  */
-function isExpandedCard(width: number, compactMode: boolean, themeMode: ThemeMode): boolean {
+function isExpandedCard(
+	width: number,
+	compactMode: boolean,
+	themeMode: ThemeMode,
+): boolean {
 	return width >= 100 && !compactMode && themeMode !== "minimal";
 }
 
@@ -274,7 +294,11 @@ function drawCard(
 	const t = theme;
 	const colorKey = borderColor ?? cfg.cardBorderColor;
 	const lines: string[] = [];
-	const useExpanded = expanded && width >= 100 && cfg.borderStyle === "rounded" && cfg.labels.activeContextTitle !== "";
+	const useExpanded =
+		expanded &&
+		width >= 100 &&
+		cfg.borderStyle === "rounded" &&
+		cfg.labels.activeContextTitle !== "";
 
 	if (useExpanded) {
 		// Expanded card with colored borders
@@ -284,7 +308,10 @@ function drawCard(
 		const rightFill = Math.max(1, width - titleW);
 		lines.push(
 			truncateToWidth(
-				t.fg(colorKey, "\u256D") + titleStr + t.fg(colorKey, "\u2500".repeat(rightFill - 1)) + t.fg(colorKey, "\u256E"),
+				t.fg(colorKey, "\u256D") +
+					titleStr +
+					t.fg(colorKey, "\u2500".repeat(rightFill - 1)) +
+					t.fg(colorKey, "\u256E"),
 				width,
 			),
 		);
@@ -295,25 +322,37 @@ function drawCard(
 			const bodyW = visibleWidth(bodyTrimmed);
 			const pad = Math.max(1, width - bodyW - 3);
 			lines.push(
-				t.fg(colorKey, "\u2502") + " " + bodyTrimmed + " ".repeat(pad - 1) + t.fg(colorKey, "\u2502"),
+				t.fg(colorKey, "\u2502") +
+					" " +
+					bodyTrimmed +
+					" ".repeat(pad - 1) +
+					t.fg(colorKey, "\u2502"),
 			);
 		}
 
 		// ╰───────────────────────────────────────────╯
 		lines.push(
 			truncateToWidth(
-				t.fg(colorKey, "\u2570") + t.fg(colorKey, "\u2500".repeat(width - 2)) + t.fg(colorKey, "\u256F"),
+				t.fg(colorKey, "\u2570") +
+					t.fg(colorKey, "\u2500".repeat(width - 2)) +
+					t.fg(colorKey, "\u256F"),
 				width,
 			),
 		);
-	} else if (cfg.borderStyle === "rounded" && cfg.labels.activeContextTitle !== "") {
+	} else if (
+		cfg.borderStyle === "rounded" &&
+		cfg.labels.activeContextTitle !== ""
+	) {
 		// Compact rounded: ╭─ title ─────────────────╮
 		const titleStr = ` ${t.fg(colorKey, t.bold(title))} `;
 		const titleW = visibleWidth(titleStr);
 		const rightFill = Math.max(1, width - titleW - 1);
 		lines.push(
 			truncateToWidth(
-				t.fg(colorKey, "\u256D") + titleStr + t.fg(colorKey, "\u2500".repeat(rightFill - 1)) + t.fg(colorKey, "\u256E"),
+				t.fg(colorKey, "\u256D") +
+					titleStr +
+					t.fg(colorKey, "\u2500".repeat(rightFill - 1)) +
+					t.fg(colorKey, "\u256E"),
 				width,
 			),
 		);
@@ -324,14 +363,19 @@ function drawCard(
 			const bodyW = visibleWidth(bodyTrimmed);
 			const pad = Math.max(1, width - bodyW - 1);
 			lines.push(
-				t.fg(colorKey, "\u2502") + bodyTrimmed + " ".repeat(pad - 1) + t.fg(colorKey, "\u2502"),
+				t.fg(colorKey, "\u2502") +
+					bodyTrimmed +
+					" ".repeat(pad - 1) +
+					t.fg(colorKey, "\u2502"),
 			);
 		}
 
 		// ╰────────────────────────────────────────────╯
 		lines.push(
 			truncateToWidth(
-				t.fg(colorKey, "\u2570") + t.fg(colorKey, "\u2500".repeat(width - 2)) + t.fg(colorKey, "\u256F"),
+				t.fg(colorKey, "\u2570") +
+					t.fg(colorKey, "\u2500".repeat(width - 2)) +
+					t.fg(colorKey, "\u256F"),
 				width,
 			),
 		);
@@ -349,7 +393,9 @@ function drawCard(
 			lines.push(truncateToWidth(` ${body}`, width));
 		}
 
-		lines.push(truncateToWidth(t.fg("borderMuted", "\u2500".repeat(width)), width));
+		lines.push(
+			truncateToWidth(t.fg("borderMuted", "\u2500".repeat(width)), width),
+		);
 	}
 
 	return lines;
@@ -405,18 +451,30 @@ class ActiveContextWidget {
 			// Expanded card with colored borders
 			const pipeSep = t.fg("dim", " \u2502 ");
 			const dataParts: string[] = [];
-			dataParts.push(t.fg("dim", "model:") + t.fg("accent", this.state.currentModel || "?"));
+			dataParts.push(
+				t.fg("dim", "model:") + t.fg("accent", this.state.currentModel || "?"),
+			);
 			if (this.state.currentProvider) {
-				dataParts.push(t.fg("dim", "provider:") + t.fg("muted", this.state.currentProvider));
+				dataParts.push(
+					t.fg("dim", "provider:") + t.fg("muted", this.state.currentProvider),
+				);
 			}
-			dataParts.push(t.fg("dim", "thinking:") + t.fg("muted", this.state.thinkingLevel));
-			dataParts.push(t.fg("dim", "mode:") + t.fg("muted", this.state.modeLabel));
-			dataParts.push(t.fg("dim", "turns:") + t.fg("muted", String(this.state.turnCount)));
+			dataParts.push(
+				t.fg("dim", "thinking:") + t.fg("muted", this.state.thinkingLevel),
+			);
+			dataParts.push(
+				t.fg("dim", "mode:") + t.fg("muted", this.state.modeLabel),
+			);
+			dataParts.push(
+				t.fg("dim", "turns:") + t.fg("muted", String(this.state.turnCount)),
+			);
 
 			const cardTitle = cfg.labels.activeContextTitle || "SESSION";
 			const bodyLine = dataParts.join(pipeSep);
 
-			lines.push(...drawCard(t, cfg, cardTitle, [bodyLine], width, accent, true));
+			lines.push(
+				...drawCard(t, cfg, cardTitle, [bodyLine], width, accent, true),
+			);
 		} else if (width >= 80 && this.state.compactMode) {
 			// Compact single-line: color only the label with the accent
 			let prefix: string;
@@ -426,14 +484,27 @@ class ActiveContextWidget {
 				prefix = "";
 			}
 			const parts: string[] = [];
-			parts.push(t.fg("dim", "model:") + t.fg("accent", this.state.currentModel || "?"));
+			parts.push(
+				t.fg("dim", "model:") + t.fg("accent", this.state.currentModel || "?"),
+			);
 			if (this.state.currentProvider) {
-				parts.push(t.fg("dim", "provider:") + t.fg("muted", this.state.currentProvider));
+				parts.push(
+					t.fg("dim", "provider:") + t.fg("muted", this.state.currentProvider),
+				);
 			}
-			parts.push(t.fg("dim", "thinking:") + t.fg("muted", this.state.thinkingLevel));
+			parts.push(
+				t.fg("dim", "thinking:") + t.fg("muted", this.state.thinkingLevel),
+			);
 			parts.push(t.fg("dim", "mode:") + t.fg("muted", this.state.modeLabel));
-			parts.push(t.fg("dim", "turns:") + t.fg("muted", String(this.state.turnCount)));
-			lines.push(truncateToWidth(`${prefix}${parts.join(` ${t.fg("dim", "|")} `)}`, width));
+			parts.push(
+				t.fg("dim", "turns:") + t.fg("muted", String(this.state.turnCount)),
+			);
+			lines.push(
+				truncateToWidth(
+					`${prefix}${parts.join(` ${t.fg("dim", "|")} `)}`,
+					width,
+				),
+			);
 		} else {
 			// Multi-line fallback
 			let label: string;
@@ -442,12 +513,21 @@ class ActiveContextWidget {
 			} else {
 				label = t.fg("dim", "~");
 			}
-			const modelStr = this.state.currentModel ? ` ${t.fg("accent", this.state.currentModel)}` : "";
-			const provStr = this.state.currentProvider ? ` ${t.fg("dim", "@")}${t.fg("muted", this.state.currentProvider)}` : "";
+			const modelStr = this.state.currentModel
+				? ` ${t.fg("accent", this.state.currentModel)}`
+				: "";
+			const provStr = this.state.currentProvider
+				? ` ${t.fg("dim", "@")}${t.fg("muted", this.state.currentProvider)}`
+				: "";
 			const thinkingStr = ` ${t.fg("dim", "t:")}${t.fg("muted", this.state.thinkingLevel)}`;
 			const modeStr = ` ${t.fg("dim", "m:")}${t.fg("muted", this.state.modeLabel)}`;
 			const turnStr = ` ${t.fg("dim", "#")}${t.fg("muted", String(this.state.turnCount))}`;
-			lines.push(truncateToWidth(`${label} ${modelStr}${provStr}${thinkingStr}${modeStr}${turnStr}`, width));
+			lines.push(
+				truncateToWidth(
+					`${label} ${modelStr}${provStr}${thinkingStr}${modeStr}${turnStr}`,
+					width,
+				),
+			);
 		}
 
 		this.cachedWidth = width;
@@ -504,14 +584,20 @@ class WorkflowProgressWidget {
 			let bodyLine: string;
 			if (this.state.toolExecutionCount > 0 && this.state.workingText) {
 				const dot = t.fg(accent, "\u25CF");
-				const toolInfo = t.fg("dim", "tools:") + t.fg("muted", String(this.state.toolExecutionCount));
-				const work = t.fg("muted", this.state.workingText.slice(0, Math.max(10, width - 50)));
+				const toolInfo =
+					t.fg("dim", "tools:") +
+					t.fg("muted", String(this.state.toolExecutionCount));
+				const work = t.fg(
+					"muted",
+					this.state.workingText.slice(0, Math.max(10, width - 50)),
+				);
 				bodyLine = `${dot} ${toolInfo} ${t.fg("dim", "\u00B7")} ${work}`;
 			} else {
 				const dot = t.fg("dim", "\u25CB");
 				const idle = t.fg("dim", cfg.labels.idle);
 				const tools = t.fg("dim", "tools:") + t.fg("muted", "0");
-				const last = t.fg("dim", "last:") + t.fg("muted", this.state.lastToolName);
+				const last =
+					t.fg("dim", "last:") + t.fg("muted", this.state.lastToolName);
 				const wfLabel = cfg.labels.workflowTitle
 					? t.fg("dim", cfg.labels.workflowTitle.toLowerCase() + ":")
 					: t.fg("dim", "wf:");
@@ -519,23 +605,41 @@ class WorkflowProgressWidget {
 			}
 
 			const cardTitle = cfg.labels.workflowTitle || "WORKFLOW";
-			lines.push(...drawCard(t, cfg, cardTitle, [bodyLine], width, accent, true));
+			lines.push(
+				...drawCard(t, cfg, cardTitle, [bodyLine], width, accent, true),
+			);
 		} else if (this.state.toolExecutionCount > 0 && this.state.workingText) {
 			// Compact active: color dot with accent
 			const dot = t.fg(accent, "\u25CF");
-			const toolInfo = t.fg("dim", "tools:") + t.fg("muted", String(this.state.toolExecutionCount));
-			const work = t.fg("muted", this.state.workingText.slice(0, Math.max(10, width - 40)));
-			lines.push(truncateToWidth(` ${dot} ${toolInfo} ${t.fg("dim", "\u00B7")} ${work}`, width));
+			const toolInfo =
+				t.fg("dim", "tools:") +
+				t.fg("muted", String(this.state.toolExecutionCount));
+			const work = t.fg(
+				"muted",
+				this.state.workingText.slice(0, Math.max(10, width - 40)),
+			);
+			lines.push(
+				truncateToWidth(
+					` ${dot} ${toolInfo} ${t.fg("dim", "\u00B7")} ${work}`,
+					width,
+				),
+			);
 		} else {
 			// Compact idle: color dot with accent
 			const dot = t.fg(accent, "\u25CB");
 			const idle = t.fg("dim", cfg.labels.idle);
 			const tools = t.fg("dim", "tools:") + t.fg("muted", "0");
-			const last = t.fg("dim", "last:") + t.fg("muted", this.state.lastToolName);
+			const last =
+				t.fg("dim", "last:") + t.fg("muted", this.state.lastToolName);
 			const wfLabel = cfg.labels.workflowTitle
 				? t.fg("dim", cfg.labels.workflowTitle.toLowerCase() + ":")
 				: t.fg("dim", "wf:");
-			lines.push(truncateToWidth(` ${dot} ${wfLabel} ${idle} ${t.fg("dim", "|")} ${tools} ${t.fg("dim", "|")} ${last}`, width));
+			lines.push(
+				truncateToWidth(
+					` ${dot} ${wfLabel} ${idle} ${t.fg("dim", "|")} ${tools} ${t.fg("dim", "|")} ${last}`,
+					width,
+				),
+			);
 		}
 
 		this.cachedWidth = width;
@@ -575,7 +679,14 @@ function showCommandPalette(
 	container.addChild(new Text(theme.fg(colorKey, theme.bold(titleText)), 1, 0));
 
 	container.addChild(
-		new Text(theme.fg("dim", " Type to search \u2022 \u2191\u2193 navigate \u2022 Enter select \u2022 Esc cancel "), 1, 0),
+		new Text(
+			theme.fg(
+				"dim",
+				" Type to search \u2022 \u2191\u2193 navigate \u2022 Enter select \u2022 Esc cancel ",
+			),
+			1,
+			0,
+		),
 	);
 
 	const selectList = new SelectList(items, Math.min(items.length, 10), {
@@ -671,7 +782,9 @@ function showSettingsOverlay(
 	container.addChild(new DynamicBorder((s: string) => theme.fg(colorKey, s)));
 
 	const settingsTitle = cfg.labels.settingsTitle || " SETTINGS ";
-	container.addChild(new Text(theme.fg(colorKey, theme.bold(settingsTitle)), 1, 0));
+	container.addChild(
+		new Text(theme.fg(colorKey, theme.bold(settingsTitle)), 1, 0),
+	);
 
 	const settingsList = new SettingsList(
 		settingsItems,
@@ -689,7 +802,14 @@ function showSettingsOverlay(
 	container.addChild(settingsList);
 
 	container.addChild(
-		new Text(theme.fg("dim", " \u2190 \u2192 or Space toggle \u2022 Enter save & close \u2022 Esc cancel "), 1, 0),
+		new Text(
+			theme.fg(
+				"dim",
+				" \u2190 \u2192 or Space toggle \u2022 Enter save & close \u2022 Esc cancel ",
+			),
+			1,
+			0,
+		),
 	);
 
 	container.addChild(new DynamicBorder((s: string) => theme.fg(colorKey, s)));
@@ -731,7 +851,9 @@ function showConfirmationOverlay(
 	const container = new Container();
 
 	container.addChild(new DynamicBorder((s: string) => theme.fg("warning", s)));
-	container.addChild(new Text(theme.fg("warning", theme.bold(` ${title} `)), 1, 0));
+	container.addChild(
+		new Text(theme.fg("warning", theme.bold(` ${title} `)), 1, 0),
+	);
 
 	const msgLines = wrapTextWithAnsi(message, 60);
 	for (const line of msgLines) {
@@ -751,7 +873,16 @@ function showConfirmationOverlay(
 	selectList.onCancel = (): void => done(null);
 
 	container.addChild(selectList);
-	container.addChild(new Text(theme.fg("dim", " \u2191\u2193 navigate \u2022 Enter confirm \u2022 Esc cancel "), 1, 0));
+	container.addChild(
+		new Text(
+			theme.fg(
+				"dim",
+				" \u2191\u2193 navigate \u2022 Enter confirm \u2022 Esc cancel ",
+			),
+			1,
+			0,
+		),
+	);
 	container.addChild(new DynamicBorder((s: string) => theme.fg("warning", s)));
 
 	return {
@@ -792,7 +923,8 @@ export default function (pi: ExtensionAPI): void {
 		};
 	}): void {
 		if (activeContextWidget) activeContextWidget.setThemeMode(state.themeMode);
-		if (workflowProgressWidget) workflowProgressWidget.setThemeMode(state.themeMode);
+		if (workflowProgressWidget)
+			workflowProgressWidget.setThemeMode(state.themeMode);
 		refreshUI(ctx);
 	}
 
@@ -846,17 +978,28 @@ export default function (pi: ExtensionAPI): void {
 		const cfg = getThemeConfig(state.themeMode);
 
 		if (state.showStatusLabels) {
-			ctx.ui.setStatus("bocchi-mode", t.fg("muted", "mode:") + t.fg("accent", state.modeLabel));
+			ctx.ui.setStatus(
+				"bocchi-mode",
+				t.fg("muted", "mode:") + t.fg("accent", state.modeLabel),
+			);
 
 			const toolsStatus =
 				state.toolExecutionCount > 0
-					? t.fg("accent", cfg.labels.running) + "(" + t.fg("muted", String(state.toolExecutionCount)) + ")"
+					? t.fg("accent", cfg.labels.running) +
+						"(" +
+						t.fg("muted", String(state.toolExecutionCount)) +
+						")"
 					: t.fg("dim", cfg.labels.idle);
 			ctx.ui.setStatus("bocchi-tools", t.fg("dim", "tools:") + toolsStatus);
 
-			const deckLabel = "bocchi:" + (state.showActiveContext ? t.fg("success", "on") : t.fg("dim", "off"));
+			const deckLabel =
+				"bocchi:" +
+				(state.showActiveContext ? t.fg("success", "on") : t.fg("dim", "off"));
 			const themeLabel = "theme:" + t.fg(cfg.titleColor, state.themeMode);
-			ctx.ui.setStatus("bocchi-budget", t.fg("dim", deckLabel + " " + themeLabel));
+			ctx.ui.setStatus(
+				"bocchi-budget",
+				t.fg("dim", deckLabel + " " + themeLabel),
+			);
 		} else {
 			ctx.ui.setStatus("bocchi-mode", undefined);
 			ctx.ui.setStatus("bocchi-budget", undefined);
@@ -884,7 +1027,10 @@ export default function (pi: ExtensionAPI): void {
 		const t = ctx.ui.theme;
 
 		if (state.showWorkingIndicator) {
-			if (state.themeMode === "retro-rock" || state.themeMode === "mono-stage") {
+			if (
+				state.themeMode === "retro-rock" ||
+				state.themeMode === "mono-stage"
+			) {
 				ctx.ui.setWorkingIndicator({
 					frames: [
 						t.fg("accent", "\u266A"),
@@ -926,12 +1072,15 @@ export default function (pi: ExtensionAPI): void {
 
 	// ─── Command Palette ─────────────────────────────────────────────
 
-	function buildCommandList(ctx: { ui: Record<string, unknown> }): CommandItem[] {
+	function buildCommandList(ctx: {
+		ui: Record<string, unknown>;
+	}): CommandItem[] {
 		return [
 			{
 				id: "bocchi-theme",
 				label: "Theme",
-				description: "Switch visual theme (retro-rock, mono-stage, tokyo-night, minimal)",
+				description:
+					"Switch visual theme (retro-rock, mono-stage, tokyo-night, minimal)",
 				action: () => {
 					(ctx.ui as any).notify("Use /bocchi-theme to switch themes", "info");
 				},
@@ -941,7 +1090,10 @@ export default function (pi: ExtensionAPI): void {
 				label: "Settings",
 				description: "Open Bocchi Deck settings",
 				action: () => {
-					(ctx.ui as any).notify("Use /bocchi-settings to adjust settings", "info");
+					(ctx.ui as any).notify(
+						"Use /bocchi-settings to adjust settings",
+						"info",
+					);
 				},
 			},
 			{
@@ -965,7 +1117,10 @@ export default function (pi: ExtensionAPI): void {
 					state.showActiveContext = false;
 					state.showWorkflowProgress = false;
 					state.showStatusLabels = false;
-					(ctx.ui as any).notify("Bocchi Deck UI cleared. Use /bocchi > Reset UI to restore.", "info");
+					(ctx.ui as any).notify(
+						"Bocchi Deck UI cleared. Use /bocchi > Reset UI to restore.",
+						"info",
+					);
 				},
 			},
 			{
@@ -987,7 +1142,10 @@ export default function (pi: ExtensionAPI): void {
 				action: () => {
 					state.compactMode = !state.compactMode;
 					refreshUI(ctx as any);
-					(ctx.ui as any).notify(`Compact mode: ${state.compactMode ? "on" : "off"}`, "info");
+					(ctx.ui as any).notify(
+						`Compact mode: ${state.compactMode ? "on" : "off"}`,
+						"info",
+					);
 				},
 			},
 			{
@@ -1028,11 +1186,20 @@ export default function (pi: ExtensionAPI): void {
 		const commands = buildCommandList(ctx);
 
 		await ctx.ui.custom<string | null>(
-			(tui: { requestRender: () => void }, theme: Theme, _kb: unknown, done: (r: string | null) => void) =>
-				showCommandPalette(tui, theme, done, commands, cfg),
+			(
+				tui: { requestRender: () => void },
+				theme: Theme,
+				_kb: unknown,
+				done: (r: string | null) => void,
+			) => showCommandPalette(tui, theme, done, commands, cfg),
 			{
 				overlay: true,
-				overlayOptions: { width: "60%", minWidth: 50, maxHeight: "70%", anchor: "center" },
+				overlayOptions: {
+					width: "60%",
+					minWidth: 50,
+					maxHeight: "70%",
+					anchor: "center",
+				},
 			},
 		);
 	}
@@ -1053,11 +1220,20 @@ export default function (pi: ExtensionAPI): void {
 			const cfg = getThemeConfig(state.themeMode);
 
 			await ctx.ui.custom<undefined>(
-				(tui: { requestRender: () => void }, theme: Theme, _kb: unknown, done: (r: undefined) => void) =>
-					showSettingsOverlay(tui, theme, done, state, onToggle, cfg),
+				(
+					tui: { requestRender: () => void },
+					theme: Theme,
+					_kb: unknown,
+					done: (r: undefined) => void,
+				) => showSettingsOverlay(tui, theme, done, state, onToggle, cfg),
 				{
 					overlay: true,
-					overlayOptions: { width: "60%", minWidth: 50, maxHeight: "70%", anchor: "center" },
+					overlayOptions: {
+						width: "60%",
+						minWidth: 50,
+						maxHeight: "70%",
+						anchor: "center",
+					},
 				},
 			);
 
@@ -1095,12 +1271,18 @@ export default function (pi: ExtensionAPI): void {
 	});
 
 	pi.registerCommand("bocchi-theme", {
-		description: "Switch visual theme (retro-rock, mono-stage, tokyo-night, minimal)",
+		description:
+			"Switch visual theme (retro-rock, mono-stage, tokyo-night, minimal)",
 		handler: async (args: any, ctx: any) => {
 			if (!ctx.hasUI) return;
 
 			const trimmed = (args ?? "").trim().toLowerCase();
-			const validThemes: ThemeMode[] = ["retro-rock", "mono-stage", "tokyo-night", "minimal"];
+			const validThemes: ThemeMode[] = [
+				"retro-rock",
+				"mono-stage",
+				"tokyo-night",
+				"minimal",
+			];
 
 			if (trimmed && validThemes.includes(trimmed as ThemeMode)) {
 				state.themeMode = trimmed as ThemeMode;
@@ -1111,25 +1293,59 @@ export default function (pi: ExtensionAPI): void {
 			}
 
 			const items: SelectItem[] = [
-				{ value: "retro-rock", label: "Retro Rock", description: "Music-themed labels, rounded borders" },
-				{ value: "mono-stage", label: "Mono Stage", description: "Monochromatic stage theme" },
-				{ value: "tokyo-night", label: "Tokyo Night", description: "Vibrant dark theme" },
-				{ value: "minimal", label: "Minimal", description: "Bare-bones, no extra labels" },
+				{
+					value: "retro-rock",
+					label: "Retro Rock",
+					description: "Music-themed labels, rounded borders",
+				},
+				{
+					value: "mono-stage",
+					label: "Mono Stage",
+					description: "Monochromatic stage theme",
+				},
+				{
+					value: "tokyo-night",
+					label: "Tokyo Night",
+					description: "Vibrant dark theme",
+				},
+				{
+					value: "minimal",
+					label: "Minimal",
+					description: "Bare-bones, no extra labels",
+				},
 			];
 
 			const cfg = getThemeConfig(state.themeMode);
 			const result = await ctx.ui.custom<string | null>(
-				(tui: { requestRender: () => void }, theme: Theme, _kb: unknown, done: (r: string | null) => void) => {
+				(
+					tui: { requestRender: () => void },
+					theme: Theme,
+					_kb: unknown,
+					done: (r: string | null) => void,
+				) => {
 					const container = new Container();
 					const colorKey = cfg.overlayColor;
 
-					container.addChild(new DynamicBorder((s: string) => theme.fg(colorKey, s)));
+					container.addChild(
+						new DynamicBorder((s: string) => theme.fg(colorKey, s)),
+					);
 
 					const themeTitle = cfg.labels.settingsTitle
 						? ` ${cfg.labels.settingsTitle} \u2014 THEME `
 						: " SELECT THEME ";
-					container.addChild(new Text(theme.fg(colorKey, theme.bold(themeTitle)), 1, 0));
-					container.addChild(new Text(theme.fg("dim", " \u2191\u2193 navigate \u2022 Enter select \u2022 Esc cancel "), 1, 0));
+					container.addChild(
+						new Text(theme.fg(colorKey, theme.bold(themeTitle)), 1, 0),
+					);
+					container.addChild(
+						new Text(
+							theme.fg(
+								"dim",
+								" \u2191\u2193 navigate \u2022 Enter select \u2022 Esc cancel ",
+							),
+							1,
+							0,
+						),
+					);
 
 					const selectList = new SelectList(items, items.length, {
 						selectedPrefix: (t: string) => theme.fg("accent", t),
@@ -1141,17 +1357,31 @@ export default function (pi: ExtensionAPI): void {
 					selectList.onCancel = (): void => done(null);
 
 					container.addChild(selectList);
-					container.addChild(new DynamicBorder((s: string) => theme.fg(colorKey, s)));
+					container.addChild(
+						new DynamicBorder((s: string) => theme.fg(colorKey, s)),
+					);
 
 					return {
-						render(w: number): string[] { return container.render(w); },
-						invalidate(): void { container.invalidate(); },
-						handleInput(data: string): void { selectList.handleInput(data); tui.requestRender(); },
+						render(w: number): string[] {
+							return container.render(w);
+						},
+						invalidate(): void {
+							container.invalidate();
+						},
+						handleInput(data: string): void {
+							selectList.handleInput(data);
+							tui.requestRender();
+						},
 					};
 				},
 				{
 					overlay: true,
-					overlayOptions: { width: "50%", minWidth: 40, maxHeight: "50%", anchor: "center" },
+					overlayOptions: {
+						width: "50%",
+						minWidth: 40,
+						maxHeight: "50%",
+						anchor: "center",
+					},
 				},
 			);
 
@@ -1172,27 +1402,64 @@ export default function (pi: ExtensionAPI): void {
 			const colorKey = cfg.overlayColor;
 
 			const statusLines: string[] = [];
-			statusLines.push(t.fg(colorKey, t.bold(`\u250C\u2500 ${cfg.labels.statusTitle || "BOCCHI STATUS"} \u2500\u2510`)));
-			statusLines.push(` ${t.fg("dim", "extension:")} ${t.fg("accent", "Bocchi Deck")}`);
-			statusLines.push(` ${t.fg("dim", "theme:")} ${t.fg(colorKey, state.themeMode)}`);
-			statusLines.push(` ${t.fg("dim", "compact:")} ${state.compactMode ? t.fg("success", "on") : t.fg("dim", "off")}`);
-			statusLines.push(` ${t.fg("dim", "widgets:")} ${state.showActiveContext ? t.fg("success", "on") : t.fg("dim", "off")}`);
-			statusLines.push(` ${t.fg("dim", "renderCards:")} ${state.renderCardsEnabled ? t.fg("success", "on") : t.fg("dim", "off")}`);
-			statusLines.push(` ${t.fg("dim", "aliases:")} ${state.aliasesEnabled ? t.fg("success", "yes") : t.fg("dim", "no")}`);
+			statusLines.push(
+				t.fg(
+					colorKey,
+					t.bold(
+						`\u250C\u2500 ${cfg.labels.statusTitle || "BOCCHI STATUS"} \u2500\u2510`,
+					),
+				),
+			);
+			statusLines.push(
+				` ${t.fg("dim", "extension:")} ${t.fg("accent", "Bocchi Deck")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "theme:")} ${t.fg(colorKey, state.themeMode)}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "compact:")} ${state.compactMode ? t.fg("success", "on") : t.fg("dim", "off")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "widgets:")} ${state.showActiveContext ? t.fg("success", "on") : t.fg("dim", "off")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "renderCards:")} ${state.renderCardsEnabled ? t.fg("success", "on") : t.fg("dim", "off")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "aliases:")} ${state.aliasesEnabled ? t.fg("success", "yes") : t.fg("dim", "no")}`,
+			);
 			statusLines.push("");
-			statusLines.push(` ${t.fg("dim", "Mode:")} ${t.fg("accent", state.modeLabel)}`);
-			statusLines.push(` ${t.fg("dim", "Tool count:")} ${t.fg("muted", String(state.toolExecutionCount))}`);
-			statusLines.push(` ${t.fg("dim", "Last tool:")} ${t.fg("muted", state.lastToolName)}`);
-			statusLines.push(` ${t.fg("dim", "Last action:")} ${t.fg("muted", state.lastToolAction)}`);
-			statusLines.push(` ${t.fg("dim", "Turns:")} ${t.fg("muted", String(state.turnCount))}`);
-			statusLines.push(t.fg(colorKey, t.bold("\u2514\u2500".repeat(12) + "\u2518")));
+			statusLines.push(
+				` ${t.fg("dim", "Mode:")} ${t.fg("accent", state.modeLabel)}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "Tool count:")} ${t.fg("muted", String(state.toolExecutionCount))}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "Last tool:")} ${t.fg("muted", state.lastToolName)}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "Last action:")} ${t.fg("muted", state.lastToolAction)}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "Turns:")} ${t.fg("muted", String(state.turnCount))}`,
+			);
+			statusLines.push(
+				t.fg(colorKey, t.bold("\u2514\u2500".repeat(12) + "\u2518")),
+			);
 
 			if (ctx.hasUI) {
-				await ctx.ui.custom<void>((_tui: any, _theme: any, _kb: unknown, done: (r: void) => void) => ({
-					render(_w: number): string[] { return statusLines.slice(); },
-					invalidate(): void {},
-					handleInput(_data: string): void { done(); },
-				}));
+				await ctx.ui.custom<void>(
+					(_tui: any, _theme: any, _kb: unknown, done: (r: void) => void) => ({
+						render(_w: number): string[] {
+							return statusLines.slice();
+						},
+						invalidate(): void {},
+						handleInput(_data: string): void {
+							done();
+						},
+					}),
+				);
 			} else {
 				for (const line of statusLines) {
 					ctx.ui.notify(line, "info");
@@ -1212,7 +1479,10 @@ export default function (pi: ExtensionAPI): void {
 			state.showActiveContext = false;
 			state.showWorkflowProgress = false;
 			state.showStatusLabels = false;
-			ctx.ui.notify("Bocchi Deck UI cleared. Use /bocchi > Reset UI to restore.", "info");
+			ctx.ui.notify(
+				"Bocchi Deck UI cleared. Use /bocchi > Reset UI to restore.",
+				"info",
+			);
 		},
 	});
 
@@ -1242,18 +1512,42 @@ export default function (pi: ExtensionAPI): void {
 					showSettingsOverlay(tui, theme, done, state, onToggle, cfg),
 				{
 					overlay: true,
-					overlayOptions: { width: "60%", minWidth: 50, maxHeight: "70%", anchor: "center" },
+					overlayOptions: {
+						width: "60%",
+						minWidth: 50,
+						maxHeight: "70%",
+						anchor: "center",
+					},
 				},
 			);
 			function onToggle(id: string, newValue: string): void {
 				switch (id) {
-					case "compactMode": state.compactMode = newValue === "on"; refreshUI(ctx); break;
-					case "showActiveContext": state.showActiveContext = newValue === "visible"; updateActiveContextWidget(ctx); break;
-					case "showWorkflowProgress": state.showWorkflowProgress = newValue === "visible"; updateWorkflowProgressWidget(ctx); break;
-					case "showStatusLabels": state.showStatusLabels = newValue === "visible"; updateStatusLabels(ctx); break;
-					case "showWorkingIndicator": state.showWorkingIndicator = newValue === "visible"; updateWorkingIndicator(ctx); break;
-					case "renderCardsEnabled": state.renderCardsEnabled = newValue === "enabled"; break;
-					case "aliasesEnabled": state.aliasesEnabled = newValue === "yes"; break;
+					case "compactMode":
+						state.compactMode = newValue === "on";
+						refreshUI(ctx);
+						break;
+					case "showActiveContext":
+						state.showActiveContext = newValue === "visible";
+						updateActiveContextWidget(ctx);
+						break;
+					case "showWorkflowProgress":
+						state.showWorkflowProgress = newValue === "visible";
+						updateWorkflowProgressWidget(ctx);
+						break;
+					case "showStatusLabels":
+						state.showStatusLabels = newValue === "visible";
+						updateStatusLabels(ctx);
+						break;
+					case "showWorkingIndicator":
+						state.showWorkingIndicator = newValue === "visible";
+						updateWorkingIndicator(ctx);
+						break;
+					case "renderCardsEnabled":
+						state.renderCardsEnabled = newValue === "enabled";
+						break;
+					case "aliasesEnabled":
+						state.aliasesEnabled = newValue === "yes";
+						break;
 				}
 			}
 		},
@@ -1264,7 +1558,12 @@ export default function (pi: ExtensionAPI): void {
 		handler: async (args: any, ctx: any) => {
 			if (!state.aliasesEnabled || !ctx.hasUI) return;
 			const trimmed = (args ?? "").trim().toLowerCase();
-			const validThemes: ThemeMode[] = ["retro-rock", "mono-stage", "tokyo-night", "minimal"];
+			const validThemes: ThemeMode[] = [
+				"retro-rock",
+				"mono-stage",
+				"tokyo-night",
+				"minimal",
+			];
 			if (trimmed && validThemes.includes(trimmed as ThemeMode)) {
 				state.themeMode = trimmed as ThemeMode;
 				applyThemeMode(ctx);
@@ -1284,17 +1583,33 @@ export default function (pi: ExtensionAPI): void {
 			const colorKey = cfg.overlayColor;
 			const statusLines: string[] = [];
 			statusLines.push(t.fg(colorKey, t.bold(` Bocchi Deck Status `)));
-			statusLines.push(` ${t.fg("dim", "theme:")} ${t.fg(colorKey, state.themeMode)}`);
-			statusLines.push(` ${t.fg("dim", "compact:")} ${state.compactMode ? t.fg("success", "on") : t.fg("dim", "off")}`);
-			statusLines.push(` ${t.fg("dim", "widgets:")} ${state.showActiveContext ? t.fg("success", "on") : t.fg("dim", "off")}`);
-			statusLines.push(` ${t.fg("dim", "renderCards:")} ${state.renderCardsEnabled ? t.fg("success", "on") : t.fg("dim", "off")}`);
-			statusLines.push(` ${t.fg("dim", "aliases:")} ${state.aliasesEnabled ? t.fg("success", "yes") : t.fg("dim", "no")}`);
+			statusLines.push(
+				` ${t.fg("dim", "theme:")} ${t.fg(colorKey, state.themeMode)}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "compact:")} ${state.compactMode ? t.fg("success", "on") : t.fg("dim", "off")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "widgets:")} ${state.showActiveContext ? t.fg("success", "on") : t.fg("dim", "off")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "renderCards:")} ${state.renderCardsEnabled ? t.fg("success", "on") : t.fg("dim", "off")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "aliases:")} ${state.aliasesEnabled ? t.fg("success", "yes") : t.fg("dim", "no")}`,
+			);
 			if (ctx.hasUI) {
-				await ctx.ui.custom<void>((_tui: any, _theme: any, _kb: unknown, done: (r: void) => void) => ({
-					render(_w: number): string[] { return statusLines.slice(); },
-					invalidate(): void {},
-					handleInput(_data: string): void { done(); },
-				}));
+				await ctx.ui.custom<void>(
+					(_tui: any, _theme: any, _kb: unknown, done: (r: void) => void) => ({
+						render(_w: number): string[] {
+							return statusLines.slice();
+						},
+						invalidate(): void {},
+						handleInput(_data: string): void {
+							done();
+						},
+					}),
+				);
 			}
 		},
 	});
@@ -1325,11 +1640,29 @@ export default function (pi: ExtensionAPI): void {
 			const confirmTitle = cfg.labels.confirmTitle || "CONFIRM";
 
 			const result = await ctx.ui.custom<{ confirmed: boolean } | null>(
-				(tui: any, theme: Theme, _kb: unknown, done: (r: { confirmed: boolean } | null) => void) =>
-					showConfirmationOverlay(tui, theme, done, confirmTitle, "Are you sure you want to perform this action?", "Proceed", "Cancel"),
+				(
+					tui: any,
+					theme: Theme,
+					_kb: unknown,
+					done: (r: { confirmed: boolean } | null) => void,
+				) =>
+					showConfirmationOverlay(
+						tui,
+						theme,
+						done,
+						confirmTitle,
+						"Are you sure you want to perform this action?",
+						"Proceed",
+						"Cancel",
+					),
 				{
 					overlay: true,
-					overlayOptions: { width: "50%", minWidth: 40, maxHeight: "50%", anchor: "center" },
+					overlayOptions: {
+						width: "50%",
+						minWidth: 40,
+						maxHeight: "50%",
+						anchor: "center",
+					},
 				},
 			);
 
@@ -1349,16 +1682,29 @@ export default function (pi: ExtensionAPI): void {
 			const warnTitle = cfg.labels.warningTitle || "WARNING";
 
 			const confirmed = await ctx.ui.custom<{ confirmed: boolean } | null>(
-				(tui: any, theme: Theme, _kb: unknown, done: (r: { confirmed: boolean } | null) => void) =>
+				(
+					tui: any,
+					theme: Theme,
+					_kb: unknown,
+					done: (r: { confirmed: boolean } | null) => void,
+				) =>
 					showConfirmationOverlay(
-						tui, theme, done,
+						tui,
+						theme,
+						done,
 						`\u26A0 ${warnTitle}`,
 						"This could modify or delete files.\nAre you absolutely sure you want to proceed?",
-						"Yes, proceed", "Abort",
+						"Yes, proceed",
+						"Abort",
 					),
 				{
 					overlay: true,
-					overlayOptions: { width: "50%", minWidth: 40, maxHeight: "50%", anchor: "center" },
+					overlayOptions: {
+						width: "50%",
+						minWidth: 40,
+						maxHeight: "50%",
+						anchor: "center",
+					},
 				},
 			);
 
@@ -1378,7 +1724,12 @@ export default function (pi: ExtensionAPI): void {
 			const loadingText = `${cfg.labels.loadingTitle || "WORKING"}... (Esc to cancel)`;
 
 			const result = await ctx.ui.custom<string | null>(
-				(tui: any, theme: Theme, _kb: unknown, done: (r: string | null) => void) => {
+				(
+					tui: any,
+					theme: Theme,
+					_kb: unknown,
+					done: (r: string | null) => void,
+				) => {
 					const loader = new BorderedLoader(tui, theme, loadingText);
 					loader.onAbort = () => done(null);
 
@@ -1391,7 +1742,10 @@ export default function (pi: ExtensionAPI): void {
 									return;
 								}
 							}, 100);
-							setTimeout(() => { clearInterval(interval); resolve(); }, 3000);
+							setTimeout(() => {
+								clearInterval(interval);
+								resolve();
+							}, 3000);
 						});
 						if (!loader.signal.aborted) done("Work completed successfully!");
 					};
@@ -1490,38 +1844,76 @@ export default function (pi: ExtensionAPI): void {
 		label: "Bocchi Status",
 		description: "Show status information via Bocchi Deck",
 		promptSnippet: "Show status info via Bocchi Deck",
-		promptGuidelines: ["Use bocchi_status to display formatted status information in the UI."],
+		promptGuidelines: [
+			"Use bocchi_status to display formatted status information in the UI.",
+		],
 		parameters: Type.Object({
 			title: Type.String({ description: "Status title" }),
 			message: Type.String({ description: "Status message content" }),
-			status: Type.Optional(StringEnum(["info", "success", "warning", "error"], { description: "Status level" })),
+			status: Type.Optional(
+				StringEnum(["info", "success", "warning", "error"], {
+					description: "Status level",
+				}),
+			),
 		}),
 
-		async execute(_toolCallId: string, params: { title: string; message: string; status?: string }): Promise<any> {
+		async execute(
+			_toolCallId: string,
+			params: { title: string; message: string; status?: string },
+		): Promise<any> {
 			return {
-				content: [{ type: "text", text: `[${params.status ?? "info"}] ${params.title}: ${params.message}` }],
-				details: { title: params.title, message: params.message, status: params.status ?? "info" },
+				content: [
+					{
+						type: "text",
+						text: `[${params.status ?? "info"}] ${params.title}: ${params.message}`,
+					},
+				],
+				details: {
+					title: params.title,
+					message: params.message,
+					status: params.status ?? "info",
+				},
 			};
 		},
 
 		renderCall(args: any, theme: Theme): ComponentLike {
 			const cfg = getThemeConfig(state.themeMode);
-			const statusIcon = args.status === "error" ? "\u2717" : args.status === "warning" ? "\u26A0" : args.status === "success" ? "\u2713" : "\u2139";
-			const statusColor = args.status === "error" ? "error" : args.status === "warning" ? "warning" : args.status === "success" ? "success" : "accent";
+			const statusIcon =
+				args.status === "error"
+					? "\u2717"
+					: args.status === "warning"
+						? "\u26A0"
+						: args.status === "success"
+							? "\u2713"
+							: "\u2139";
+			const statusColor =
+				args.status === "error"
+					? "error"
+					: args.status === "warning"
+						? "warning"
+						: args.status === "success"
+							? "success"
+							: "accent";
 
 			if (cfg.labels.toolCallTitle) {
 				const cardLines = drawCard(
-					theme, cfg,
+					theme,
+					cfg,
 					`${statusIcon} ${cfg.labels.toolCallTitle}`,
 					[
 						`${theme.fg("dim", "title:")}  ${theme.fg("accent", args.title)}`,
 						`${theme.fg("dim", "message:")} ${theme.fg("muted", args.message?.slice(0, 40))}`,
 					],
-					80, statusColor,
+					80,
+					statusColor,
 				);
 				return new ContainerFromLines(cardLines);
 			}
-			return new Text(`${theme.fg(statusColor, statusIcon)} ${theme.fg("toolTitle", args.title)}`, 1, 0);
+			return new Text(
+				`${theme.fg(statusColor, statusIcon)} ${theme.fg("toolTitle", args.title)}`,
+				1,
+				0,
+			);
 		},
 
 		renderResult(result: any, _options: any, theme: Theme): ComponentLike {
@@ -1530,8 +1922,22 @@ export default function (pi: ExtensionAPI): void {
 			const title = details.title ?? "";
 			const message = details.message ?? "";
 			const status = details.status ?? "info";
-			const statusIcon = status === "error" ? "\u2717" : status === "warning" ? "\u26A0" : status === "success" ? "\u2713" : "\u2139";
-			const statusColor = status === "error" ? "error" : status === "warning" ? "warning" : status === "success" ? "success" : "accent";
+			const statusIcon =
+				status === "error"
+					? "\u2717"
+					: status === "warning"
+						? "\u26A0"
+						: status === "success"
+							? "\u2713"
+							: "\u2139";
+			const statusColor =
+				status === "error"
+					? "error"
+					: status === "warning"
+						? "warning"
+						: status === "success"
+							? "success"
+							: "accent";
 
 			const resultLabel = cfg.labels.resultTitle || "RESULT";
 			const bodyLines: string[] = [];
@@ -1540,7 +1946,14 @@ export default function (pi: ExtensionAPI): void {
 				bodyLines.push(`${theme.fg("text", line)}`);
 			}
 
-			const cardLines = drawCard(theme, cfg, `${statusIcon} ${resultLabel}: ${title}`, bodyLines, 80, statusColor);
+			const cardLines = drawCard(
+				theme,
+				cfg,
+				`${statusIcon} ${resultLabel}: ${title}`,
+				bodyLines,
+				80,
+				statusColor,
+			);
 			return new ContainerFromLines(cardLines);
 		},
 	});
@@ -1550,11 +1963,19 @@ export default function (pi: ExtensionAPI): void {
 		label: "Bocchi Error",
 		description: "Display a formatted error message in the Bocchi Deck UI",
 		promptSnippet: "Show error via Bocchi Deck",
-		promptGuidelines: ["Use bocchi_error to display formatted error messages when things go wrong."],
+		promptGuidelines: [
+			"Use bocchi_error to display formatted error messages when things go wrong.",
+		],
 		parameters: Type.Object({
 			errorType: Type.String({ description: "Type/category of the error" }),
-			errorMessage: Type.String({ description: "The error message to display" }),
-			suggestion: Type.Optional(Type.String({ description: "Optional suggestion for fixing the error" })),
+			errorMessage: Type.String({
+				description: "The error message to display",
+			}),
+			suggestion: Type.Optional(
+				Type.String({
+					description: "Optional suggestion for fixing the error",
+				}),
+			),
 		}),
 
 		async execute(_toolCallId: string, params: any): Promise<any> {
@@ -1568,10 +1989,21 @@ export default function (pi: ExtensionAPI): void {
 			const errorLabel = cfg.labels.errorTitle || "ERROR";
 
 			if (cfg.labels.errorTitle) {
-				const cardLines = drawCard(theme, cfg, `\u2717 ${errorLabel}`, [`${theme.fg("error", args.errorType)}`], 80, "error");
+				const cardLines = drawCard(
+					theme,
+					cfg,
+					`\u2717 ${errorLabel}`,
+					[`${theme.fg("error", args.errorType)}`],
+					80,
+					"error",
+				);
 				return new ContainerFromLines(cardLines);
 			}
-			return new Text(`${theme.fg("error", "\u2717")} ${theme.fg("toolTitle", errorLabel)} ${theme.fg("muted", args.errorType)}`, 1, 0);
+			return new Text(
+				`${theme.fg("error", "\u2717")} ${theme.fg("toolTitle", errorLabel)} ${theme.fg("muted", args.errorType)}`,
+				1,
+				0,
+			);
 		},
 
 		renderResult(result: any, _options: any, theme: Theme): ComponentLike {
@@ -1593,7 +2025,14 @@ export default function (pi: ExtensionAPI): void {
 				bodyLines.push(` \uD83D\uDCA1 ${theme.fg("accent", suggestion)}`);
 			}
 
-			const cardLines = drawCard(theme, cfg, `\u2717 ${errorLabel}`, bodyLines, 80, "error");
+			const cardLines = drawCard(
+				theme,
+				cfg,
+				`\u2717 ${errorLabel}`,
+				bodyLines,
+				80,
+				"error",
+			);
 			return new ContainerFromLines(cardLines);
 		},
 	});
@@ -1603,19 +2042,29 @@ export default function (pi: ExtensionAPI): void {
 		label: "Bocchi Work",
 		description: "Show a working/loading indicator message in Bocchi Deck",
 		promptSnippet: "Show work progress via Bocchi Deck",
-		promptGuidelines: ["Use bocchi_work to show progress messages for ongoing operations."],
+		promptGuidelines: [
+			"Use bocchi_work to show progress messages for ongoing operations.",
+		],
 		parameters: Type.Object({
 			task: Type.String({ description: "Description of the work being done" }),
-			progress: Type.Optional(Type.String({ description: "Progress information" })),
+			progress: Type.Optional(
+				Type.String({ description: "Progress information" }),
+			),
 		}),
 
 		async execute(_toolCallId: string, params: any): Promise<any> {
-			const text = params.progress ? `[working] ${params.task} (${params.progress})` : `[working] ${params.task}`;
+			const text = params.progress
+				? `[working] ${params.task} (${params.progress})`
+				: `[working] ${params.task}`;
 			return { content: [{ type: "text", text }], details: { ...params } };
 		},
 
 		renderCall(args: any, theme: Theme): ComponentLike {
-			return new Text(`${theme.fg("accent", "\u25CF")} ${theme.fg("toolTitle", "bocchi_work")} ${theme.fg("muted", args.task)}`, 1, 0);
+			return new Text(
+				`${theme.fg("accent", "\u25CF")} ${theme.fg("toolTitle", "bocchi_work")} ${theme.fg("muted", args.task)}`,
+				1,
+				0,
+			);
 		},
 
 		renderResult(result: any, _options: any, theme: Theme): ComponentLike {
@@ -1626,10 +2075,18 @@ export default function (pi: ExtensionAPI): void {
 
 			const bodyLines: string[] = [];
 			const frame = theme.fg("accent", "\u25CF");
-			const taskText = progress ? `${theme.fg("dim", task)} ${theme.fg("muted", `(${progress})`)}` : theme.fg("dim", task);
+			const taskText = progress
+				? `${theme.fg("dim", task)} ${theme.fg("muted", `(${progress})`)}`
+				: theme.fg("dim", task);
 			bodyLines.push(`${frame} ${taskText}`);
 
-			const cardLines = drawCard(theme, cfg, cfg.labels.loadingTitle || "WORKING", bodyLines, 80);
+			const cardLines = drawCard(
+				theme,
+				cfg,
+				cfg.labels.loadingTitle || "WORKING",
+				bodyLines,
+				80,
+			);
 			return new ContainerFromLines(cardLines);
 		},
 	});
@@ -1637,21 +2094,40 @@ export default function (pi: ExtensionAPI): void {
 	pi.registerTool({
 		name: "bocchi_confirm",
 		label: "Bocchi Confirm",
-		description: "Request user confirmation before performing a dangerous operation",
+		description:
+			"Request user confirmation before performing a dangerous operation",
 		promptSnippet: "Request user confirmation for risky operations",
 		promptGuidelines: [
 			"Use bocchi_confirm BEFORE performing dangerous operations like rm -rf, mass deletions, or destructive writes.",
 		],
 		parameters: Type.Object({
-			title: Type.String({ description: "Brief title for the confirmation dialog" }),
-			description: Type.String({ description: "Detailed description of the operation and its consequences" }),
-			confirmLabel: Type.Optional(Type.String({ description: "Label for the confirm button (default: 'Proceed')" })),
-			cancelLabel: Type.Optional(Type.String({ description: "Label for the cancel button (default: 'Cancel')" })),
+			title: Type.String({
+				description: "Brief title for the confirmation dialog",
+			}),
+			description: Type.String({
+				description:
+					"Detailed description of the operation and its consequences",
+			}),
+			confirmLabel: Type.Optional(
+				Type.String({
+					description: "Label for the confirm button (default: 'Proceed')",
+				}),
+			),
+			cancelLabel: Type.Optional(
+				Type.String({
+					description: "Label for the cancel button (default: 'Cancel')",
+				}),
+			),
 		}),
 
 		async execute(_toolCallId: string, params: any): Promise<any> {
 			return {
-				content: [{ type: "text", text: `[CONFIRMATION REQUIRED] ${params.title}: ${params.description}` }],
+				content: [
+					{
+						type: "text",
+						text: `[CONFIRMATION REQUIRED] ${params.title}: ${params.description}`,
+					},
+				],
 				details: {
 					...params,
 					confirmLabel: params.confirmLabel ?? "Proceed",
@@ -1666,10 +2142,21 @@ export default function (pi: ExtensionAPI): void {
 			const confirmLabel = cfg.labels.confirmTitle || "CONFIRM";
 
 			if (cfg.labels.confirmTitle) {
-				const cardLines = drawCard(theme, cfg, `\u26A0 ${confirmLabel}`, [`${theme.fg("warning", args.title)}`], 80, "warning");
+				const cardLines = drawCard(
+					theme,
+					cfg,
+					`\u26A0 ${confirmLabel}`,
+					[`${theme.fg("warning", args.title)}`],
+					80,
+					"warning",
+				);
 				return new ContainerFromLines(cardLines);
 			}
-			return new Text(`${theme.fg("warning", "\u26A0")} ${theme.fg("toolTitle", confirmLabel)} ${theme.fg("muted", args.title)}`, 1, 0);
+			return new Text(
+				`${theme.fg("warning", "\u26A0")} ${theme.fg("toolTitle", confirmLabel)} ${theme.fg("muted", args.title)}`,
+				1,
+				0,
+			);
 		},
 
 		renderResult(result: any, _options: any, theme: Theme): ComponentLike {
@@ -1682,11 +2169,17 @@ export default function (pi: ExtensionAPI): void {
 
 			const bodyLines: string[] = [];
 			if (status === "confirmed") {
-				bodyLines.push(`${theme.fg("success", "\u2713")} ${theme.fg("success", `Confirmed: ${title}`)}`);
+				bodyLines.push(
+					`${theme.fg("success", "\u2713")} ${theme.fg("success", `Confirmed: ${title}`)}`,
+				);
 			} else if (status === "cancelled") {
-				bodyLines.push(`${theme.fg("dim", "\u2014")} ${theme.fg("muted", `Cancelled: ${title}`)}`);
+				bodyLines.push(
+					`${theme.fg("dim", "\u2014")} ${theme.fg("muted", `Cancelled: ${title}`)}`,
+				);
 			} else {
-				bodyLines.push(`${theme.fg("warning", "\u26A0")} ${theme.fg("warning", title)}`);
+				bodyLines.push(
+					`${theme.fg("warning", "\u26A0")} ${theme.fg("warning", title)}`,
+				);
 			}
 
 			const wrappedDesc = wrapTextWithAnsi(description, 60);
@@ -1694,9 +2187,18 @@ export default function (pi: ExtensionAPI): void {
 				bodyLines.push(` ${theme.fg("text", line)}`);
 			}
 			bodyLines.push("");
-			bodyLines.push(` ${theme.fg("dim", `[ ${theme.fg("success", confirmLabel)} / ${theme.fg("dim", cancelLabel)} ]`)}`);
+			bodyLines.push(
+				` ${theme.fg("dim", `[ ${theme.fg("success", confirmLabel)} / ${theme.fg("dim", cancelLabel)} ]`)}`,
+			);
 
-			const cardLines = drawCard(theme, getThemeConfig(state.themeMode), "\u26A0 CONFIRM", bodyLines, 80, "warning");
+			const cardLines = drawCard(
+				theme,
+				getThemeConfig(state.themeMode),
+				"\u26A0 CONFIRM",
+				bodyLines,
+				80,
+				"warning",
+			);
 			return new ContainerFromLines(cardLines);
 		},
 	});
