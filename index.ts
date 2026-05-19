@@ -61,6 +61,7 @@ interface BocchiThemeConfig {
 	titleColor: string;
 	overlayColor: string;
 	cardBorderColor: string;
+	selectedColor: string;
 }
 
 function getThemeConfig(mode: ThemeMode): BocchiThemeConfig {
@@ -83,9 +84,10 @@ function getThemeConfig(mode: ThemeMode): BocchiThemeConfig {
 					running: "live",
 				},
 				borderStyle: "rounded",
-				titleColor: "accent",
-				overlayColor: "accent",
+				titleColor: "blue",
+				overlayColor: "pink",
 				cardBorderColor: "accent",
+				selectedColor: "pink",
 			};
 		case "mono-stage":
 			return {
@@ -108,6 +110,7 @@ function getThemeConfig(mode: ThemeMode): BocchiThemeConfig {
 				titleColor: "muted",
 				overlayColor: "accent",
 				cardBorderColor: "muted",
+				selectedColor: "accent",
 			};
 		case "tokyo-night":
 			return {
@@ -130,6 +133,7 @@ function getThemeConfig(mode: ThemeMode): BocchiThemeConfig {
 				titleColor: "accent",
 				overlayColor: "accent",
 				cardBorderColor: "accent",
+				selectedColor: "accent",
 			};
 		case "minimal":
 		default:
@@ -153,6 +157,7 @@ function getThemeConfig(mode: ThemeMode): BocchiThemeConfig {
 				titleColor: "muted",
 				overlayColor: "accent",
 				cardBorderColor: "muted",
+				selectedColor: "accent",
 			};
 	}
 }
@@ -209,23 +214,24 @@ type CardType =
 function getCardAccent(cfg: BocchiThemeConfig, cardType: CardType): string {
 	if (cfg.labels.activeContextTitle.includes("\uD83C\uDFB8")) {
 		// retro-rock: per-card accent mapping
+		// palette: blue (session), yellow (setlist/warnings), pink (riff/amp)
 		switch (cardType) {
 			case "session":
-				return "accent";
+				return "blue";
 			case "setlist":
-				return "warning";
+				return "yellow";
 			case "riff":
-				return "warning";
+				return "pink";
 			case "clean-take":
 				return "success";
 			case "bad-take":
 				return "error";
 			case "off-beat":
-				return "warning";
+				return "yellow";
 			case "amp":
-				return "warning";
+				return "pink";
 			case "start-take":
-				return "warning";
+				return "yellow";
 		}
 	}
 	if (cfg.labels.activeContextTitle === "SESSION") {
@@ -270,6 +276,7 @@ interface BocchiState {
 	lastToolAction: string;
 	themeMode: ThemeMode;
 	aliasesEnabled: boolean;
+	thinkingLabelEnabled: boolean;
 	widgetWidth: number;
 	widgetMode: string;
 }
@@ -295,6 +302,7 @@ const DEFAULT_STATE: BocchiState = {
 	lastToolAction: "none",
 	themeMode: "retro-rock",
 	aliasesEnabled: true,
+	thinkingLabelEnabled: true,
 	widgetWidth: 0,
 	widgetMode: "narrow",
 };
@@ -733,8 +741,8 @@ function showCommandPalette(
 	);
 
 	const selectList = new SelectList(items, Math.min(items.length, 10), {
-		selectedPrefix: (t: string) => theme.fg("accent", t),
-		selectedText: (t: string) => theme.fg("accent", t),
+		selectedPrefix: (t: string) => theme.fg(cfg.selectedColor, t),
+		selectedText: (t: string) => theme.fg(cfg.selectedColor, t),
 		description: (t: string) => theme.fg("muted", t),
 		scrollInfo: (t: string) => theme.fg("dim", t),
 		noMatch: (t: string) => theme.fg("warning", t),
@@ -816,6 +824,12 @@ function showSettingsOverlay(
 			label: "Alias commands (/control, etc.)",
 			currentValue: state.aliasesEnabled ? "yes" : "no",
 			values: ["yes", "no"],
+		},
+		{
+			id: "thinkingLabelEnabled",
+			label: "Retro-rock thinking label",
+			currentValue: state.thinkingLabelEnabled ? "on" : "off",
+			values: ["on", "off"],
 		},
 	];
 
@@ -1065,7 +1079,7 @@ export default function (pi: ExtensionAPI): void {
 	// ─── Working Indicator ───────────────────────────────────────────
 
 	function updateWorkingIndicator(ctx: {
-		ui: { theme: Theme; setWorkingIndicator: (options?: unknown) => void };
+		ui: { theme: Theme; setWorkingIndicator: (options?: unknown) => void; setWorkingMessage: (msg?: string) => void };
 	}): void {
 		const t = ctx.ui.theme;
 
@@ -1097,20 +1111,56 @@ export default function (pi: ExtensionAPI): void {
 		} else {
 			ctx.ui.setWorkingIndicator({ frames: [] });
 		}
+		// Sync the working message whenever indicator is updated
+		updateWorkingMessage(ctx);
 	}
 
 	const retroRockMessages = [
-		"recording...",
+		"tuning...",
 		"checking the setlist...",
-		"tuning session...",
+		"recording...",
 		"running riff...",
+		"warming up the amp...",
+		"finding the next chord...",
+		"panicking quietly...",
 	];
+
+	// Thinking label messages for hidden thinking block (shown when hideThinkingBlock=true)
+	// Customized via ctx.ui.setHiddenThinkingLabel() on each turn_start
+	const thinkingMessages = [
+		"tuning...",
+		"finding the chord...",
+		"writing the solo...",
+		"panicking quietly...",
+	];
+
+	function getThinkingLabel(): string {
+		if (state.thinkingLabelEnabled && state.themeMode === "retro-rock") {
+			return thinkingMessages[state.turnCount % thinkingMessages.length];
+		}
+		// Return undefined to restore default "Thinking..."
+		return undefined as any;
+	}
 
 	function getWorkingMessage(): string {
 		if (state.themeMode === "retro-rock") {
 			return retroRockMessages[state.turnCount % retroRockMessages.length];
 		}
 		return `turn ${state.turnCount}...`;
+	}
+
+	/**
+	 * Apply the retro-rock working message to Pi's system working indicator.
+	 * Called on turn_start, before_agent_start, theme switch, and startup.
+	 */
+	function updateWorkingMessage(ctx: {
+		ui: { setWorkingMessage: (msg?: string) => void };
+	}): void {
+		if (state.showWorkingIndicator && state.themeMode === "retro-rock") {
+			ctx.ui.setWorkingMessage(getWorkingMessage());
+		} else {
+			ctx.ui.setWorkingMessage(); // restore default "Working..."
+		}
 	}
 
 	// ─── Command Palette ─────────────────────────────────────────────
@@ -1308,6 +1358,12 @@ export default function (pi: ExtensionAPI): void {
 					case "aliasesEnabled":
 						state.aliasesEnabled = newValue === "yes";
 						break;
+					case "thinkingLabelEnabled":
+						state.thinkingLabelEnabled = newValue === "on";
+						if (!state.thinkingLabelEnabled) {
+							ctx.ui.setHiddenThinkingLabel(); // restore default
+						}
+						break;
 				}
 			}
 		},
@@ -1391,8 +1447,8 @@ export default function (pi: ExtensionAPI): void {
 					);
 
 					const selectList = new SelectList(items, items.length, {
-						selectedPrefix: (t: string) => theme.fg("accent", t),
-						selectedText: (t: string) => theme.fg("accent", t),
+						selectedPrefix: (t: string) => theme.fg(cfg.selectedColor, t),
+						selectedText: (t: string) => theme.fg(cfg.selectedColor, t),
 						description: (t: string) => theme.fg("muted", t),
 					});
 
@@ -1470,6 +1526,24 @@ export default function (pi: ExtensionAPI): void {
 			);
 			statusLines.push(
 				` ${t.fg("dim", "aliases:")} ${state.aliasesEnabled ? t.fg("success", "yes") : t.fg("dim", "no")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "coreThinkingTextOverride:")} ${t.fg("success", "supported")} ${t.fg("muted", "(via setHiddenThinkingLabel)")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "thinkingLabel:")} ${state.thinkingLabelEnabled ? t.fg("accent", "retro-rock") : t.fg("dim", "off")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "workingTextOverride:")} ${t.fg("success", "enabled")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "workingIndicator:")} ${state.themeMode === "retro-rock" ? t.fg("accent", "retro-rock/music") : t.fg("dim", state.themeMode)}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "currentWorkingMessage:")} ${state.workingText ? t.fg("accent", state.workingText) : t.fg("muted", "idle")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "retroRockMessagePool includes panicking quietly:")} ${t.fg("success", "yes")}`,
 			);
 			statusLines.push("");
 			statusLines.push(
@@ -1603,6 +1677,12 @@ export default function (pi: ExtensionAPI): void {
 						break;
 					case "aliasesEnabled":
 						state.aliasesEnabled = newValue === "yes";
+						break;
+					case "thinkingLabelEnabled":
+						state.thinkingLabelEnabled = newValue === "on";
+						if (!state.thinkingLabelEnabled) {
+							ctx.ui.setHiddenThinkingLabel(); // restore default
+						}
 						break;
 				}
 			}
@@ -1850,12 +1930,33 @@ export default function (pi: ExtensionAPI): void {
 	pi.on("turn_start", async (_event: any, ctx: any) => {
 		state.turnCount++;
 		state.workingText = getWorkingMessage();
+		// Override the "Thinking..." label with retro-rock messages
+		if (state.thinkingLabelEnabled && state.themeMode === "retro-rock") {
+			ctx.ui.setHiddenThinkingLabel(getThinkingLabel());
+		} else if (state.thinkingLabelEnabled) {
+			ctx.ui.setHiddenThinkingLabel("thinking...");
+		} else {
+			ctx.ui.setHiddenThinkingLabel(); // restore default
+		}
+		// Update Pi's system working message with the retro-rock pool
+		updateWorkingMessage(ctx);
 		refreshUI(ctx);
 	});
 
 	pi.on("turn_end", async (_event: any, ctx: any) => {
 		state.workingText = "";
+		updateWorkingMessage(ctx); // restore default
 		refreshUI(ctx);
+	});
+
+	// Re-apply retro-rock working message when streaming actually starts.
+	// turn_start fires too early — Pi may reset the message before the
+	// loading animation becomes visible. message_start is right when
+	// streaming begins, so the working message shows correctly.
+	pi.on("message_start", async (_event: any, ctx: any) => {
+		if (_event.message?.role === "assistant") {
+			updateWorkingMessage(ctx);
+		}
 	});
 
 	pi.on("tool_execution_start", async (event: any, ctx: any) => {
@@ -1883,6 +1984,8 @@ export default function (pi: ExtensionAPI): void {
 	pi.on("before_agent_start", async (_event: any, ctx: any) => {
 		state.modeLabel = "thinking";
 		state.workingText = getWorkingMessage();
+		// Update Pi's system working message for retro-rock
+		updateWorkingMessage(ctx);
 		refreshUI(ctx);
 	});
 
@@ -1890,6 +1993,7 @@ export default function (pi: ExtensionAPI): void {
 		state.modeLabel = "normal";
 		state.workingText = "";
 		state.toolExecutionCount = 0;
+		updateWorkingMessage(ctx); // restore default
 		refreshUI(ctx);
 	});
 
