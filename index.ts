@@ -502,7 +502,8 @@ class ActiveContextWidget {
 		} else if (width >= 80) {
 			// Compact one-line (no longer requires compactMode=true)
 			const prefix = cfg.labels.activeContextTitle
-				? t.fg(accent, t.bold(getCompactLabel(cfg.labels.activeContextTitle))) + " "
+				? t.fg(accent, t.bold(getCompactLabel(cfg.labels.activeContextTitle))) +
+					" "
 				: t.fg("dim", "~ ");
 			const parts: string[] = [];
 			parts.push(t.fg("accent", this.state.currentModel || "?"));
@@ -511,7 +512,9 @@ class ActiveContextWidget {
 			}
 			parts.push(t.fg("muted", this.state.thinkingLevel));
 			parts.push(t.fg("muted", this.state.modeLabel));
-			parts.push(t.fg("dim", "turns:") + t.fg("muted", String(this.state.turnCount)));
+			parts.push(
+				t.fg("dim", "turns:") + t.fg("muted", String(this.state.turnCount)),
+			);
 			lines.push(
 				truncateToWidth(
 					`${prefix}${parts.join(` ${t.fg("dim", "|")} `)}`,
@@ -591,12 +594,20 @@ class WorkflowProgressWidget {
 		const cfg = this.cfg;
 		const lines: string[] = [];
 		const accent = getCardAccent(cfg, "setlist");
-		const expanded = isExpandedCard(width, this.state.compactMode, this.state.themeMode);
+		const expanded = isExpandedCard(
+			width,
+			this.state.compactMode,
+			this.state.themeMode,
+		);
 
 		// Track render dimensions for debugging (pick max width seen)
 		if (width > this.state.widgetWidth) {
 			this.state.widgetWidth = width;
-			this.state.widgetMode = expanded ? "expanded" : width >= 80 ? "compact" : "narrow";
+			this.state.widgetMode = expanded
+				? "expanded"
+				: width >= 80
+					? "compact"
+					: "narrow";
 		}
 
 		if (expanded) {
