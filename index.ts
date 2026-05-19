@@ -84,10 +84,10 @@ function getThemeConfig(mode: ThemeMode): BocchiThemeConfig {
 					running: "live",
 				},
 				borderStyle: "rounded",
-				titleColor: "blue",
-				overlayColor: "pink",
+				titleColor: "accent",
+				overlayColor: "accent",
 				cardBorderColor: "accent",
-				selectedColor: "pink",
+				selectedColor: "accent",
 			};
 		case "mono-stage":
 			return {
@@ -214,24 +214,24 @@ type CardType =
 function getCardAccent(cfg: BocchiThemeConfig, cardType: CardType): string {
 	if (cfg.labels.activeContextTitle.includes("\uD83C\uDFB8")) {
 		// retro-rock: per-card accent mapping
-		// palette: blue (session), yellow (setlist/warnings), pink (riff/amp)
+		// Uses valid Pi ThemeColor keys only (not raw color names)
 		switch (cardType) {
 			case "session":
-				return "blue";
+				return "accent";
 			case "setlist":
-				return "yellow";
+				return "accent";
 			case "riff":
-				return "pink";
+				return "warning";
 			case "clean-take":
 				return "success";
 			case "bad-take":
 				return "error";
 			case "off-beat":
-				return "yellow";
+				return "warning";
 			case "amp":
-				return "pink";
+				return "accent";
 			case "start-take":
-				return "yellow";
+				return "warning";
 		}
 	}
 	if (cfg.labels.activeContextTitle === "SESSION") {
