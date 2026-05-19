@@ -157,6 +157,26 @@ function getThemeConfig(mode: ThemeMode): BocchiThemeConfig {
 	}
 }
 
+// ─── Compact Label Helper ──────────────────────────────────────────
+
+/**
+ * Derive a shorter prefix for compact mode.
+ * For emoji-prefixed labels (e.g., "\uD83C\uDFB8 ACTIVE SESSION")
+ * returns "\uD83C\uDFB8 session:". For plain labels (e.g., "ACTIVE CONTEXT")
+ * returns "context:". For empty labels returns "".
+ */
+function getCompactLabel(title: string): string {
+	if (!title) return "";
+	const trimmed = title.trim();
+	const parts = trimmed.split(/\s+/);
+	const lastWord = parts[parts.length - 1].toLowerCase();
+	const firstCode = trimmed.charCodeAt(0);
+	if (firstCode > 127) {
+		return trimmed[0] + " " + lastWord + ":";
+	}
+	return lastWord + ":";
+}
+
 // ─── Card Accent Colors ──────────────────────────────────────────────
 
 /**
@@ -250,6 +270,8 @@ interface BocchiState {
 	lastToolAction: string;
 	themeMode: ThemeMode;
 	aliasesEnabled: boolean;
+	widgetWidth: number;
+	widgetMode: string;
 }
 
 const DEFAULT_STATE: BocchiState = {
@@ -267,12 +289,14 @@ const DEFAULT_STATE: BocchiState = {
 	toolExecutionLabel: "",
 	workingText: "",
 	showWorkingIndicator: true,
-	compactMode: true,
+	compactMode: false,
 	renderCardsEnabled: true,
 	lastToolName: "none",
 	lastToolAction: "none",
 	themeMode: "retro-rock",
 	aliasesEnabled: true,
+	widgetWidth: 0,
+	widgetMode: "narrow",
 };
 
 // ─── Card Drawing Helpers ───────────────────────────────────────────
@@ -475,30 +499,19 @@ class ActiveContextWidget {
 			lines.push(
 				...drawCard(t, cfg, cardTitle, [bodyLine], width, accent, true),
 			);
-		} else if (width >= 80 && this.state.compactMode) {
-			// Compact single-line: color only the label with the accent
-			let prefix: string;
-			if (cfg.labels.activeContextTitle) {
-				prefix = t.fg(accent, t.bold(cfg.labels.activeContextTitle)) + " ";
-			} else {
-				prefix = "";
-			}
+		} else if (width >= 80) {
+			// Compact one-line (no longer requires compactMode=true)
+			const prefix = cfg.labels.activeContextTitle
+				? t.fg(accent, t.bold(getCompactLabel(cfg.labels.activeContextTitle))) + " "
+				: t.fg("dim", "~ ");
 			const parts: string[] = [];
-			parts.push(
-				t.fg("dim", "model:") + t.fg("accent", this.state.currentModel || "?"),
-			);
+			parts.push(t.fg("accent", this.state.currentModel || "?"));
 			if (this.state.currentProvider) {
-				parts.push(
-					t.fg("dim", "provider:") + t.fg("muted", this.state.currentProvider),
-				);
+				parts.push(t.fg("muted", this.state.currentProvider));
 			}
-			parts.push(
-				t.fg("dim", "thinking:") + t.fg("muted", this.state.thinkingLevel),
-			);
-			parts.push(t.fg("dim", "mode:") + t.fg("muted", this.state.modeLabel));
-			parts.push(
-				t.fg("dim", "turns:") + t.fg("muted", String(this.state.turnCount)),
-			);
+			parts.push(t.fg("muted", this.state.thinkingLevel));
+			parts.push(t.fg("muted", this.state.modeLabel));
+			parts.push(t.fg("dim", "turns:") + t.fg("muted", String(this.state.turnCount)));
 			lines.push(
 				truncateToWidth(
 					`${prefix}${parts.join(` ${t.fg("dim", "|")} `)}`,
@@ -506,7 +519,7 @@ class ActiveContextWidget {
 				),
 			);
 		} else {
-			// Multi-line fallback
+			// Narrow fallback (< 80 cols)
 			let label: string;
 			if (cfg.labels.activeContextTitle) {
 				label = t.fg(cfg.titleColor, t.bold(cfg.labels.activeContextTitle));
@@ -578,12 +591,18 @@ class WorkflowProgressWidget {
 		const cfg = this.cfg;
 		const lines: string[] = [];
 		const accent = getCardAccent(cfg, "setlist");
+		const expanded = isExpandedCard(width, this.state.compactMode, this.state.themeMode);
 
-		if (isExpandedCard(width, this.state.compactMode, this.state.themeMode)) {
+		// Track render dimensions for debugging (pick max width seen)
+		if (width > this.state.widgetWidth) {
+			this.state.widgetWidth = width;
+			this.state.widgetMode = expanded ? "expanded" : width >= 80 ? "compact" : "narrow";
+		}
+
+		if (expanded) {
 			// Expanded card with colored borders
 			let bodyLine: string;
 			if (this.state.toolExecutionCount > 0 && this.state.workingText) {
-				const dot = t.fg(accent, "\u25CF");
 				const toolInfo =
 					t.fg("dim", "tools:") +
 					t.fg("muted", String(this.state.toolExecutionCount));
@@ -591,9 +610,8 @@ class WorkflowProgressWidget {
 					"muted",
 					this.state.workingText.slice(0, Math.max(10, width - 50)),
 				);
-				bodyLine = `${dot} ${toolInfo} ${t.fg("dim", "\u00B7")} ${work}`;
+				bodyLine = `${t.fg(accent, "\u25CF")} ${toolInfo} ${t.fg("dim", "\u00B7")} ${work}`;
 			} else {
-				const dot = t.fg("dim", "\u25CB");
 				const idle = t.fg("dim", cfg.labels.idle);
 				const tools = t.fg("dim", "tools:") + t.fg("muted", "0");
 				const last =
@@ -601,42 +619,56 @@ class WorkflowProgressWidget {
 				const wfLabel = cfg.labels.workflowTitle
 					? t.fg("dim", cfg.labels.workflowTitle.toLowerCase() + ":")
 					: t.fg("dim", "wf:");
-				bodyLine = `${dot} ${wfLabel} ${idle} ${t.fg("dim", "|")} ${tools} ${t.fg("dim", "|")} ${last}`;
+				bodyLine = `${wfLabel} ${idle} ${t.fg("dim", "|")} ${tools} ${t.fg("dim", "|")} ${last}`;
 			}
 
 			const cardTitle = cfg.labels.workflowTitle || "WORKFLOW";
 			lines.push(
 				...drawCard(t, cfg, cardTitle, [bodyLine], width, accent, true),
 			);
-		} else if (this.state.toolExecutionCount > 0 && this.state.workingText) {
-			// Compact active: color dot with accent
-			const dot = t.fg(accent, "\u25CF");
-			const toolInfo =
-				t.fg("dim", "tools:") +
-				t.fg("muted", String(this.state.toolExecutionCount));
-			const work = t.fg(
-				"muted",
-				this.state.workingText.slice(0, Math.max(10, width - 40)),
-			);
-			lines.push(
-				truncateToWidth(
-					` ${dot} ${toolInfo} ${t.fg("dim", "\u00B7")} ${work}`,
-					width,
-				),
-			);
+		} else if (width >= 80) {
+			// Compact one-line (no leading dot)
+			const label = cfg.labels.workflowTitle
+				? t.fg(accent, getCompactLabel(cfg.labels.workflowTitle)) + " "
+				: "";
+			if (this.state.toolExecutionCount > 0 && this.state.workingText) {
+				// Active state
+				const toolInfo =
+					t.fg("dim", "tools:") +
+					t.fg("muted", String(this.state.toolExecutionCount));
+				const work = t.fg(
+					"muted",
+					this.state.workingText.slice(0, Math.max(10, width - 40)),
+				);
+				lines.push(
+					truncateToWidth(
+						`${label}${t.fg("dim", "running")} ${t.fg("dim", "|")} ${toolInfo} ${t.fg("dim", "\u00B7")} ${work}`,
+						width,
+					),
+				);
+			} else {
+				// Idle state
+				const idle = t.fg("dim", cfg.labels.idle);
+				const tools = t.fg("dim", "tools:") + t.fg("muted", "0");
+				const last =
+					t.fg("dim", "last:") + t.fg("muted", this.state.lastToolName);
+				lines.push(
+					truncateToWidth(
+						`${label}${idle} ${t.fg("dim", "|")} ${tools} ${t.fg("dim", "|")} ${last}`,
+						width,
+					),
+				);
+			}
 		} else {
-			// Compact idle: color dot with accent
+			// Narrow fallback (< 80 cols)
 			const dot = t.fg(accent, "\u25CB");
 			const idle = t.fg("dim", cfg.labels.idle);
 			const tools = t.fg("dim", "tools:") + t.fg("muted", "0");
 			const last =
 				t.fg("dim", "last:") + t.fg("muted", this.state.lastToolName);
-			const wfLabel = cfg.labels.workflowTitle
-				? t.fg("dim", cfg.labels.workflowTitle.toLowerCase() + ":")
-				: t.fg("dim", "wf:");
 			lines.push(
 				truncateToWidth(
-					` ${dot} ${wfLabel} ${idle} ${t.fg("dim", "|")} ${tools} ${t.fg("dim", "|")} ${last}`,
+					` ${dot} ${idle} ${t.fg("dim", "|")} ${tools} ${t.fg("dim", "|")} ${last}`,
 					width,
 				),
 			);
@@ -1444,8 +1476,21 @@ export default function (pi: ExtensionAPI): void {
 			statusLines.push(
 				` ${t.fg("dim", "Turns:")} ${t.fg("muted", String(state.turnCount))}`,
 			);
+			statusLines.push("");
 			statusLines.push(
-				t.fg(colorKey, t.bold("\u2514\u2500".repeat(12) + "\u2518")),
+				` ${t.fg("dim", "Widget width:")} ${t.fg("accent", String(state.widgetWidth))}px`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "Widget mode:")} ${t.fg("accent", state.widgetMode)}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "Compact setting:")} ${state.compactMode ? t.fg("success", "on") : t.fg("dim", "off")}`,
+			);
+			statusLines.push(
+				` ${t.fg("dim", "Expanded eligible:")} ${isExpandedCard(state.widgetWidth, state.compactMode, state.themeMode) ? t.fg("success", "yes") : t.fg("dim", "no")}`,
+			);
+			statusLines.push(
+				t.fg(colorKey, t.bold("\u2514\u2500".repeat(14) + "\u2518")),
 			);
 
 			if (ctx.hasUI) {
